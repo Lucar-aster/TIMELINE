@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestione Task con Timeline</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="left-pane">
+            <h2>Gestione Task</h2>
+            <table id="task-table">
+                <thead>
+                    <tr>
+                        <th>Commessa</th>
+                        <th>Operatore</th>
+                        <th>Inizio Programma</th>
+                        <th>Fine Programma</th>
+                        <th>Inizio Lavoro</th>
+                        <th>Fine Lavoro</th>
+                        <th>Azioni</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Le righe della tabella verranno aggiunte dinamicamente -->
+                </tbody>
+            </table>
+            <button id="add-task-btn">Aggiungi Task</button>
+        </div>
+
+        <div class="right-pane">
+            <h2>Timeline</h2>
+            <div id="timeline"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
