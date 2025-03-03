@@ -1,8 +1,11 @@
-document.getElementById('add-task-btn').addEventListener('click', addTask);
+// Carica il pacchetto di Google Charts per la timeline
+google.charts.load('current', {'packages':['timeline']});
 
 let tasks = []; // Array per memorizzare i task
 
 // Funzione per aggiungere un task principale
+document.getElementById('add-task-btn').addEventListener('click', addTask);
+
 function addTask() {
     const commessa = prompt('Inserisci il nome della commessa');
     const operatore = prompt('Inserisci il nome dell\'operatore');
@@ -113,45 +116,34 @@ function removeTask(index) {
     renderTimeline();
 }
 
-// Funzione per rendere la timeline grafica
+// Funzione per rendere la timeline utilizzando Google Charts
 function renderTimeline() {
-    const timeline = document.getElementById('timeline');
-    timeline.innerHTML = ''; // Pulisce la timeline
+    const container = document.getElementById('timeline');
+    const data = new google.visualization.DataTable();
 
+    data.addColumn({ type: 'string', id: 'Task' });
+    data.addColumn({ type: 'date', id: 'Start' });
+    data.addColumn({ type: 'date', id: 'End' });
+
+    // Aggiungiamo i task alla timeline
     tasks.forEach(task => {
-        const programBar = createTaskBar(task.inizioProgramma, task.fineProgramma, 'program-bar');
-        const workBar = createTaskBar(task.inizioLavoro, task.fineLavoro, 'work-bar');
-
-        timeline.appendChild(programBar);
-        timeline.appendChild(workBar);
-
-        // Aggiungiamo anche le barre per i sub-task
+        // Task principale
+        data.addRow([task.commessa, new Date(task.inizioProgramma), new Date(task.fineProgramma)]);
+        // Sub-task
         task.subTasks.forEach(subTask => {
-            const subProgramBar = createTaskBar(subTask.inizioProgramma, subTask.fineProgramma, 'program-bar');
-            const subWorkBar = createTaskBar(subTask.inizioLavoro, subTask.fineLavoro, 'work-bar');
-
-            timeline.appendChild(subProgramBar);
-            timeline.appendChild(subWorkBar);
+            data.addRow([subTask.subTaskName, new Date(subTask.inizioProgramma), new Date(subTask.fineProgramma)]);
         });
     });
+
+    const options = {
+        timeline: { showBarLabels: true },
+        avoidOverlappingGridLines: false,
+        colors: ['#4CAF50', '#FF9800'] // Colori per le barre
+    };
+
+    const chart = new google.visualization.Timeline(container);
+    chart.draw(data, options);
 }
 
-// Funzione per creare le barre dei task sulla timeline
-function createTaskBar(inizio, fine, className) {
-    const startDate = new Date(inizio);
-    const endDate = new Date(fine);
-    const timelineStart = new Date('2025-01-01'); // Inizio della timeline
-    const timelineEnd = new Date('2025-12-31'); // Fine della timeline
-
-    // Calcoliamo la posizione e la larghezza della barra
-    const totalDuration = timelineEnd - timelineStart;
-    const barStart = (startDate - timelineStart) / totalDuration * 100;
-    const barEnd = (endDate - timelineStart) / totalDuration * 100;
-
-    const bar = document.createElement('div');
-    bar.classList.add('task-bar', className);
-    bar.style.left = `${barStart}%`;
-    bar.style.width = `${barEnd - barStart}%`;
-
-    return bar;
-}
+// Carica e disegna la timeline appena i dati sono pronti
+google.charts.setOnLoadCallback(renderTimeline);
