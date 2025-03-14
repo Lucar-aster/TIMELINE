@@ -3,39 +3,269 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestione Task con Timeline</title>
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <link rel="stylesheet" href="style.css">
+    <title>Vis.js Timeline con Modifica Task</title>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+    <link href="https://unpkg.com/vis-timeline@7.0.0/styles/vis-timeline-graph2d.min.css" rel="stylesheet" type="text/css">
+    <script type="text/javascript" src="https://unpkg.com/vis-timeline@7.0.0/standalone/umd/vis-timeline-graph2d.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f1f6;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-top: 20px;
+        }
+
+        #timeline {
+            margin: 30px auto;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e3e8f3;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #0061f2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #004ecf;
+        }
+
+        /* Modal di modifica */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0, 0, 0);
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .form-label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <div class="left-pane">
-            <h2>Gestione Task</h2>
-            <table id="task-table">
-                <thead>
-                    <tr>
-                        <th>Commessa</th>
-                        <th>Operatore</th>
-                        <th>Inizio Programma</th>
-                        <th>Fine Programma</th>
-                        <th>Inizio Lavoro</th>
-                        <th>Fine Lavoro</th>
-                        <th>Azioni</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Le righe della tabella verranno aggiunte dinamicamente -->
-                </tbody>
-            </table>
-            <button id="add-task-btn">Aggiungi Task</button>
-        </div>
+    <h2>Gestione Task con Modifica</h2>
+    <div id="timeline" style="width: 100%; height: 400px;"></div>
 
-        <div class="right-pane">
-            <h2>Timeline</h2>
-            <div id="timeline"></div>
+    <br>
+    <button id="saveTasks">Salva Task</button>
+    <button id="loadTasks">Carica Task</button>
+
+    <!-- Modal per la modifica dei task -->
+    <div id="taskModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Modifica Task</h3>
+            <label for="taskContent" class="form-label">Contenuto del Task</label>
+            <input type="text" id="taskContent" class="form-input" />
+
+            <label for="taskStart" class="form-label">Data di Inizio</label>
+            <input type="datetime-local" id="taskStart" class="form-input" />
+
+            <label for="taskEnd" class="form-label">Data di Fine</label>
+            <input type="datetime-local" id="taskEnd" class="form-input" />
+
+            <label for="taskColor" class="form-label">Colore del Task</label>
+            <input type="color" id="taskColor" class="form-input" />
+
+            <button id="saveTaskChanges">Salva Modifiche</button>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        var groups = [
+            {id: 1, content: 'Gruppo A'},
+            {id: 2, content: 'Gruppo B'},
+            {id: 3, content: 'Gruppo C'}
+        ];
+
+        var tasks = [
+            { id: 1, content: 'Task 1', start: '2023-03-10T10:00:00', end: '2023-03-10T12:00:00', group: 1, style: "background-color: #ffcc00;" },
+            { id: 2, content: 'Task 2', start: '2023-03-10T14:00:00', end: '2023-03-10T16:00:00', group: 1, style: "background-color: #00ccff;" },
+            { id: 3, content: 'Task 3', start: '2023-03-11T09:00:00', end: '2023-03-11T11:00:00', group: 2, style: "background-color: #ff6666;" },
+            { id: 4, content: 'Task 4', start: '2023-03-12T09:00:00', end: '2023-03-12T10:00:00', group: 2, style: "background-color: #66ff66;" },
+            { id: 5, content: 'Task 5', start: '2023-03-13T14:00:00', end: '2023-03-13T15:00:00', group: 3, style: "background-color: #9966ff;" }
+        ];
+
+        var selectedTask = null;
+        var timeline = null;
+
+        function renderTimeline() {
+            var container = document.getElementById('timeline');
+            var options = {
+                stack: true,
+                editable: true,
+                margin: { item: 10 },
+                showCurrentTime: true,
+                zoomable: true,
+                locale: 'it',
+                timeAxis: { scale: 'day', step: 1, position: 'top' }, // Time axis in alto
+                orientation: 'top', // Aggiunta l'opzione orientation
+                horizontalScroll: true,
+                onAdd: function(item, callback) {
+                    tasks.push(item); // Aggiungi il nuovo task alla lista
+                    callback(item);
+                },
+                onUpdate: function(item, callback) {
+                    const taskIndex = tasks.findIndex(task => task.id === item.id);
+                    if (taskIndex !== -1) {
+                        tasks[taskIndex] = item; // Aggiorna il task esistente
+                        callback(item); // Conferma il cambiamento
+                    }
+                },
+                onRemove: function(item, callback) {
+                    tasks = tasks.filter(task => task.id !== item.id); // Rimuove il task
+                    callback(item);
+                }
+            };
+
+            if (timeline) {
+                timeline.setItems(tasks); // Se la timeline esiste già, aggiorna solo gli items
+            } else {
+                timeline = new vis.Timeline(container, tasks, groups, options);
+            }
+
+            timeline.on('doubleClick', function(properties) {
+                var itemId = properties.item;
+                if (itemId) {
+                    selectedTask = tasks.find(task => task.id == itemId);
+                    if (selectedTask) {
+                        // Precompilare i campi del modal con i dati esistenti
+                        document.getElementById('taskContent').value = selectedTask.content;
+                        document.getElementById('taskStart').value = formatDateForInput(selectedTask.start);
+                        document.getElementById('taskEnd').value = formatDateForInput(selectedTask.end);
+                        document.getElementById('taskColor').value = selectedTask.style.replace("background-color:", "").trim() || "#ffffff"; // Imposta il colore
+                        document.getElementById('taskModal').style.display = "block";
+                    }
+                }
+            });
+
+            document.getElementById('saveTaskChanges').addEventListener('click', function() {
+                if (selectedTask) {
+                    // Salva solo i campi modificati
+                    var updatedTask = { ...selectedTask };
+
+                    var newContent = document.getElementById('taskContent').value;
+                    if (newContent !== selectedTask.content) {
+                        updatedTask.content = newContent; // Aggiorna solo se il nome è cambiato
+                    }
+
+                    var newStart = document.getElementById('taskStart').value;
+                    if (newStart && newStart !== selectedTask.start) {
+                        updatedTask.start = newStart; // Aggiorna solo se la data di inizio è cambiata
+                    }
+
+                    var newEnd = document.getElementById('taskEnd').value;
+                    if (newEnd && newEnd !== selectedTask.end) {
+                        updatedTask.end = newEnd; // Aggiorna solo se la data di fine è cambiata
+                    }
+
+                    var newColor = document.getElementById('taskColor').value;
+                    if (newColor && newColor !== selectedTask.style.replace("background-color:", "").trim()) {
+                        updatedTask.style = `background-color: ${newColor};`; // Aggiorna il colore
+                    }
+
+                    // Aggiorna il task nella timeline
+                    const taskIndex = tasks.findIndex(task => task.id === updatedTask.id);
+                    if (taskIndex !== -1) {
+                        tasks[taskIndex] = updatedTask;
+                        timeline.setItems(tasks); // Rende effettive le modifiche
+                        document.getElementById('taskModal').style.display = "none"; // Chiudi il modal
+                    }
+                }
+            });
+
+            document.querySelector('.close').addEventListener('click', function() {
+                document.getElementById('taskModal').style.display = "none"; // Chiudi il modal
+            });
+        }
+
+        function formatDateForInput(dateString) {
+            var date = new Date(dateString);
+            var year = date.getFullYear();
+            var month = ("0" + (date.getMonth() + 1)).slice(-2); // 0 pad month
+            var day = ("0" + date.getDate()).slice(-2); // 0 pad day
+            var hours = ("0" + date.getHours()).slice(-2);
+            var minutes = ("0" + date.getMinutes()).slice(-2);
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+
+        function loadTasks() {
+            var loadedTasks = JSON.parse(localStorage.getItem('tasks'));
+            if (loadedTasks && Array.isArray(loadedTasks)) {
+                tasks = loadedTasks;
+                renderTimeline();
+            } else {
+                alert('Nessun task salvato o formato errato.');
+            }
+        }
+
+        function saveTasks() {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            alert('I task sono stati salvati!');
+        }
+
+        if (localStorage.getItem('tasks') === null) {
+            renderTimeline();
+        } else {
+            loadTasks();
+        }
+
+        document.getElementById('saveTasks').addEventListener('click', saveTasks);
+        document.getElementById('loadTasks').addEventListener('click', loadTasks);
+    </script>
 </body>
 </html>
