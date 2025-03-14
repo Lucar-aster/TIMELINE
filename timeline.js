@@ -13,3 +13,5 @@ function renderTimeline() {
 
     timeline = new vis.Timeline(container, tasks, groups, options);
 }
+
+renderTimeline();
