@@ -1,7 +1,7 @@
 var selectedTask = null;
 
-timeline.on('doubleClick', function(properties) {
-    var itemId = properties.item;
+document.getElementById('timeline').addEventListener('dblclick', function(event) {
+    var itemId = event.target.dataset.id;
     if (itemId) {
         selectedTask = tasks.find(task => task.id == itemId);
         if (selectedTask) {
