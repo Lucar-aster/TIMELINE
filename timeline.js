@@ -8,6 +8,7 @@ function renderTimeline() {
         editable: true,
         margin: { item: 10 },
         showCurrentTime: true,
+        showWeekScale: true
         zoomable: true,
         locale: 'it'
     {
