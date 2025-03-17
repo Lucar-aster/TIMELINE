@@ -6,9 +6,10 @@ function renderTimeline() {
         configure: true
         stack: true,
         editable: true,
+        groupEditable: true
         margin: { item: 10 },
         showCurrentTime: true,
-        showWeekScale: true
+        showWeekScale: false
         zoomable: true,
         locale: 'it'
     {
