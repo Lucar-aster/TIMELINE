@@ -9,10 +9,9 @@ function renderTimeline() {
         groupEditable: true
         margin: { item: 10 },
         showCurrentTime: true,
-        showWeekScale: false
         zoomable: true,
         locale: 'it'
-    {
+    
     timeAxis: {
       scale: 'day',
       step: 1
@@ -22,7 +21,7 @@ function renderTimeline() {
       minorLabels: {day: 'DD/MMM'},
       majorLabels: {day: 'w'}
     }
-  }
+  
     };
 
     timeline = new vis.Timeline(container, tasks, groups, options);
