@@ -3,6 +3,7 @@ var timeline = null;
 function renderTimeline() {
     var container = document.getElementById('timeline');
     var options = {
+        configure: true
         stack: true,
         editable: true,
         margin: { item: 10 },
