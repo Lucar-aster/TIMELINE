@@ -18,8 +18,6 @@ function renderTimeline() {
         locale: 'it',
         showWeekScale: true,
         timeAxis: { scale: 'day', step: 1, position: 'top' },
-         
-        format: { minorLabels: { day: 'DD/MMM' }, majorLabels: { day: 'w' } }
     };
     
 // Verifica che tasks e groups siano definiti prima di usarli    
